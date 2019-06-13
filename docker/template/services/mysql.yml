@@ -1,0 +1,15 @@
+  mysql:
+    image: 'mysql:5.7'
+    restart: always
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - 'mysql-data:/var/lib/mysql'
+      - './backup.sql:/docker-entrypoint-initdb.d/init.sql'
+    labels:
+    - traefik.enable=false
+    networks:
+    - backend-network

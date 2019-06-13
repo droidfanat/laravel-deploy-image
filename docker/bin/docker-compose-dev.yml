@@ -1,0 +1,95 @@
+version: '3'
+
+
+networks:
+  backend-network:
+    driver: bridge
+  traefik:
+    external: true
+
+volumes:
+  redis-data:
+  mysql-data:
+  home-dir:
+
+services:
+  &app-service app: &app-service-template
+    image: registry.example.com/group/user:latest
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+    - /etc/passwd:/etc/passwd:ro
+    - /etc/group:/etc/group:ro
+    - ./storage:/app/storage:rw
+    - home-dir:/home/user
+    hostname: *app-service
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: &redis-port 6379
+      SCHEDULE_PERIOD: 60
+      FPM_PORT: &php-fpm-port 9000
+      FPM_USER: "${UID:-1000}"
+      FPM_GROUP: "${GID:-1000}"
+      FPM_UPSTREAM_PARAMS: " "
+      HOME: /home/user
+      ROOT_DIR: '/app/public'
+      DOMAIN_NAME: domain.example.com
+    env_file:
+    - .env
+    command: keep-alive.sh
+    depends_on:
+    - redis
+    - mysql
+    labels:
+    - traefik.enable=false
+    networks:
+    - backend-network
+
+  &queue-service queue:
+    <<: *app-service-template
+    restart: always
+    hostname: *queue-service
+    command: php /app/artisan queue:work --tries=3
+
+  &scheduler-service scheduler:
+    <<: *app-service-template
+    restart: always
+    hostname: *scheduler-service
+    command: scheduler.sh "php /app/artisan schedule:run"
+
+  &php-fpm-service php-fpm:
+    <<: *app-service-template
+    user: 'root:root'
+    restart: always
+    hostname: *php-fpm-service
+    entrypoint: /app-entrypoint.sh
+    command: []
+    labels:
+      - "traefik.docker.network=traefik"
+      - traefik.port=80
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.frontend.headers.SSLProxyHeaders=X-Forwarded-Proto:https"
+      - "traefik.frontend.headers.SSLProxyHeaders=HTTPS:on"
+      - 'traefik.enable=true'
+      - "traefik.frontend.rule=Host:example.com,www.example.com"
+      - "traefik.frontend.redirect.permanent=true"  
+      - "traefik.frontend.redirect.regex=^http?://example.com/(.*)"
+      - "traefik.frontend.redirect.replacement=https://example.com/$${1}"
+
+    
+    networks:
+    - backend-network
+    - traefik
+
+  redis:
+    image: redis:4.0.11-alpine
+    restart: always
+    command: redis-server
+    volumes:
+      - redis-data:/data:rw
+    labels:
+    - traefik.enable=false
+    networks:
+    - backend-network
+
+
+

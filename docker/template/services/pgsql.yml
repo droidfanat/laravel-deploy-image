@@ -1,0 +1,15 @@
+  pgsql:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: pgsql_db
+      POSTGRES_USER: pgsql_user
+      POSTGRES_PASSWORD: pgsql_password
+    volumes:
+      - './pgsql-data:/var/lib/postgresql/data'
+      - './docker/init.sql:/docker-entrypoint-initdb.d/init.sql'
+    labels:
+      - traefik.enable=false
+    networks:
+      - backend-network
+
