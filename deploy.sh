@@ -40,6 +40,7 @@ fi
 
 python /docker/bin/deploy.py
 
+scp -P ${SSH_PORT} /docker/deploy/sql-backup.sh ${SSH_USER}@${SSH_HOST}:${SERVER_PATH}
 
 ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "cd ${SERVER_PATH} && chmod +x sql-backup.sh && ./sql-backup.sh && docker-compose down "
 
@@ -48,7 +49,16 @@ scp -P ${SSH_PORT} /docker/deploy/sql-backup.sh .env docker-compose.yml ${SSH_US
 ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "cd ${SERVER_PATH} && docker login -u "$CI_REGISTRY_USER" -p "$CI_JOB_TOKEN" "$CI_REGISTRY" &&docker-compose pull --quiet"
 
 echo ${DEPLOY_CLEAN}
+#!/bin/bash
 
+###################### After deploy script ###############
+WORK_DIR='/app'
+
+cd $WORK_DIR || return 1
+
+##########################################################
+
+echo "After deploy script dev"
 ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "cd ${SERVER_PATH} && export UID=\${UID} && export GID=\${GID}   && 
 docker-compose up -d  && 
 if [[ ! -f deploy.lock || \"${DEPLOY_CLEAN}\" == \"YES\" ]];  then 
