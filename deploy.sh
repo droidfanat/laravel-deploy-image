@@ -66,7 +66,7 @@ if [[ ! -f deploy.lock || \"${DEPLOY_CLEAN}\" == \"YES\" ]];  then
    touch deploy.lock;
 else 
    docker-compose exec -T php-fpm /deploy/laravel-deploy-${CI_COMMIT_REF_NAME}.sh -m && 
-;fi 
+;fi
 docker-compose exec -T php-fpm docker/deploy/after-deploy-${CI_COMMIT_REF_NAME}.sh
 " 
 

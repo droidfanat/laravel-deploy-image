@@ -19,8 +19,8 @@ RUN     if [ -L public/storage ]; then \
             php artisan storage:link; \
         fi \
     && chmod 777 /app/bootstrap/cache \
-    && chmod 750 /deploy/laravel-deploy*
-
+    && chmod 750 /deploy/laravel-deploy* \
+    && chmod 750 /app/docker/deploy/after-deploy*
 
 WORKDIR /app
 ENTRYPOINT []
