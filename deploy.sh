@@ -12,8 +12,11 @@ chmod 644 ~/.ssh/known_hosts
 echo "$ENV_VARIABLES" | base64 -d > .env 
 source .env
 
-cat /docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml > docker-compose.yml
-
+if [[ ! -f docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml ]]; then
+   cat docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml > docker-compose.yml
+else 
+   cat /docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml > docker-compose.yml
+fi
 
 sed -i -e "s|registry.example.com/group/user.*|$CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}|g" "docker-compose.yml"
 sed -i -e "s|Host:example.com,www.example.com|Host:${DOMAIN},www.${DOMAIN}|g" "docker-compose.yml"
