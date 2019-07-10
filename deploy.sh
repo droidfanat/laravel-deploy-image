@@ -12,7 +12,7 @@ chmod 644 ~/.ssh/known_hosts
 echo "$ENV_VARIABLES" | base64 -d > .env 
 source .env
 
-if [[ ! -f docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml ]]; then
+if [[ -f docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml ]]; then
    cat docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml > docker-compose.yml
 else 
    cat /docker/template/docker-compose-${CI_COMMIT_REF_NAME}.yml > docker-compose.yml
