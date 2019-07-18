@@ -41,7 +41,7 @@ elif [[ "${DB_CONNECTION}" == "$mysql" ]]; then
     sed -i -e "s|MYSQL_PASSWORD: secret|MYSQL_PASSWORD: ${DB_PASSWORD}|g" "docker-compose.yml"
 fi
 
-python /docker/bin/deploy.py
+#python /docker/bin/deploy.py
 
 scp -P ${SSH_PORT} /docker/deploy/sql-backup.sh ${SSH_USER}@${SSH_HOST}:${SERVER_PATH}
 
